@@ -1,0 +1,8 @@
+.DS_Store
+.sass-cache
+.publish
+.idea/
+node_modules/
+public/
+
+Desktop.ini
