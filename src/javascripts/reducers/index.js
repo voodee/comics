@@ -1,7 +1,1 @@
-import { combineReducers } from 'redux'
-
-import contacts from './contacts'
-
-export default combineReducers({
-    contacts
-})
+export contacts from './contacts'
