@@ -29,7 +29,8 @@ const muiTheme = getMuiTheme({
 import createHistory from 'history/createHashHistory'
 import { ConnectedRouter, routerReducer, routerMiddleware } from 'react-router-redux'
 import { Route } from 'react-router'
-import reducers from './reducers'
+import * as reducers from './reducers'
+import initialState from './store/initialState'
 
 const history = createHistory();
 const middleware = routerMiddleware(history);
@@ -39,6 +40,7 @@ const store = createStore(
         ...reducers,
         router: routerReducer
     }),
+    initialState,
     applyMiddleware(middleware)
 );
 
@@ -49,7 +51,7 @@ render(
             <ConnectedRouter history={history}>
                 <App>
                     <Route exact path="/" component={Contacts}/>
-                    <Route path="/dialog" component={Dialog}/>
+                    <Route path="/dialog/:id" component={Dialog}/>
                 </App>
             </ConnectedRouter>
         </MuiThemeProvider>

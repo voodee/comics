@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import {connect} from 'react-redux'
+import moment from 'moment'
 
 import AppBar from 'material-ui/AppBar'
 import IconButton from 'material-ui/IconButton'
@@ -13,9 +14,34 @@ import ContentAdd from 'material-ui/svg-icons/content/add'
 import Divider from 'material-ui/Divider'
 import {List, ListItem} from 'material-ui/List'
 
+
 class Dialog extends Component {
+
+    constructor() {
+        super();
+        moment.locale('ru');
+    }
+
+    scrollIntoLastBubble() {
+        const bubbles = document.getElementsByClassName('bubble');
+        bubbles[bubbles.length - 1].scrollIntoView();
+    }
+
+    componentDidMount() {
+        this.scrollIntoLastBubble()
+    }
+
+    componentDidUpdate() {
+        this.scrollIntoLastBubble()
+    }
+
+    handlerClickAnswer = (id) => {
+        console.log('handlerClickAnswer', id)
+
+    }
+
     render() {
-        const { history } = this.props;
+        const { history, messages, answers } = this.props;
 
         return (
             <div className="dialog">
@@ -42,43 +68,34 @@ class Dialog extends Component {
                 />
                 <div className="chat">
                     <div className="conversation-start">
-                        <span>Today, 6:48 AM</span>
+                        <span>{moment().format('dddd, DD MMMM')}</span>
                     </div>
-                    <div className="bubble you">
-                        Привет.
-                    </div>
-                    <div className="bubble you">
-                        Хорошо что ты в сети
-                    </div>
-                    <div className="bubble me">
-                        Кто ты? Я тебя не знаю
-                    </div>
-                    <div className="bubble you">
-                        Давай я расскажу всё по порядку
-                    </div>
-                    <div className="bubble you">
-                        Когда ты совершал телепортацию,
-                        произошел сбой в системе
-                    </div>
+                    {
+                        messages.map( message =>
+                            <div key={ message.get('id') }>
+                                <div className="bubble you">{ message.get('text') }</div>
+                            </div>
+                        )
+                    }
                 </div>
 
                 <div>
                     <Divider />
                     <List>
-                        <ListItem
-                            primaryText="О чём ты говоришь?"
-                            leftIcon={<ContentAdd />}
-                        />
-                        <Divider inset={true} />
-                        <ListItem
-                            primaryText="Псих, иди в бан!"
-                            leftIcon={<ContentAdd />}
-                        />
-                        <Divider inset={true} />
-                        <ListItem
-                            primaryText="Хорошо, удиви меня :D"
-                            leftIcon={<ContentAdd />}
-                        />
+                        {
+                            answers.map( (answer, key) =>
+                                <div key={ answer.get('id') }>
+                                    <ListItem
+                                        primaryText={ answer.get('text') }
+                                        leftIcon={<ContentAdd />}
+                                        onClick={ () => this.handlerClickAnswer( answer.get('id') ) }
+                                    />
+                                    { answers.size - 1 != key &&
+                                        <Divider inset={true} />
+                                    }
+                                </div>
+                            )
+                        }
                     </List>
                 </div>
             </div>
@@ -87,9 +104,29 @@ class Dialog extends Component {
 }
 
 
-
 const mapStateToProps = (state, ownProps) => {
-    return {}
+    const contactId = ownProps.match.params.id;
+    let currentMessage = null;
+
+    return {
+        messages: state.messages
+            // выбираем сообщения этого контакта
+            .filter( message => message.get('contactId') == contactId)
+            // показываем только сообщения с ответами + 1 без ответа
+            .filter( message => {
+                if ( !currentMessage && !message.get('answerId') ) {
+                    currentMessage = message.get('id');
+                    return true;
+                }
+                return !currentMessage;
+            })
+            //
+            .sort((a, b) => a.get('id') - b.get('id')),
+
+        answers: state.answers
+            // ToDo оптимизнуть, тут всегда будет только один элемент
+            .filter( answer => answer.get('messageId') == currentMessage)
+    }
 };
 
 export default connect(mapStateToProps)(Dialog)

@@ -21,7 +21,7 @@ import IconShare from 'material-ui/svg-icons/social/share'
 class Contacts extends Component {
 
     render() {
-        const { history } = this.props;
+        const { contacts, history } = this.props;
 
 
         return (
@@ -46,7 +46,19 @@ class Contacts extends Component {
                 />
 
                 <List>
-
+                    {
+                        contacts.map( (contact, key) =>
+                            <div key={key}>
+                                <ListItem
+                                    primaryText={contact.get('name')}
+                                    secondaryText="..."
+                                    leftAvatar={<Avatar src={'images/avatar/' + contact.get('photo')} />}
+                                    onClick={ () => history.push(`/dialog/${contact.get('id')}`) }
+                                />
+                                <Divider inset={true} />
+                            </div>
+                        )
+                    }
                     <ListItem
                         primaryText="Арсений Петров"
                         secondaryText="Кто я? Хороший вопрос! Я это ты!"
@@ -83,7 +95,11 @@ class Contacts extends Component {
 
 
 const mapStateToProps = (state, ownProps) => {
-    return {}
+    const { contacts } = state;
+
+    return {
+        contacts
+    }
 };
 
 export default connect(mapStateToProps)(Contacts)
