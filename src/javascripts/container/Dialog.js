@@ -10,9 +10,10 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import NavigationArrowBack from 'material-ui/svg-icons/navigation/arrow-back'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 
-
 import Divider from 'material-ui/Divider'
 import {List, ListItem} from 'material-ui/List'
+
+import { selectAnswer } from '../actions/dialogs'
 
 
 class Dialog extends Component {
@@ -36,8 +37,7 @@ class Dialog extends Component {
     }
 
     handlerClickAnswer = (id) => {
-        console.log('handlerClickAnswer', id)
-
+        this.props.selectAnswer(id)
     }
 
     render() {
@@ -129,4 +129,10 @@ const mapStateToProps = (state, ownProps) => {
     }
 };
 
-export default connect(mapStateToProps)(Dialog)
+// const mapDispatchToProps = (dispatch) => {
+//     return {
+//         selectAnswer: id => dispatch( selectAnswer(id) )
+//     }
+// };
+
+export default connect(mapStateToProps, {selectAnswer})(Dialog)
