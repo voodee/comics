@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {connect} from 'react-redux'
-
+import { Map } from 'immutable'
 
 import Avatar from 'material-ui/Avatar'
 import {List, ListItem} from 'material-ui/List'
@@ -21,8 +21,25 @@ import IconShare from 'material-ui/svg-icons/social/share'
 class Contacts extends Component {
 
     render() {
-        const { contacts, history } = this.props;
+        const { contacts, dialogs, messages, history } = this.props;
 
+        const contactList = contacts.map( contact => {
+            // ищем последнее сообщение в переписке
+            const contactDialogs = dialogs
+                .filter( dialog => dialog.get('contactId') == contact.get('id'))
+                .filter( dialog => dialog.get('textType') == 'message')
+                .sort( (a, b) => b.get('id') - a.get('id') )
+                .first();
+
+            const secondaryText = contactDialogs
+                ? messages
+                    .filter( message => message.get('id') == contactDialogs.get('textId') )
+                    .first()
+                    .get('text')
+                : '...';
+
+            return contact.set('secondaryText', secondaryText)
+        });
 
         return (
             <div>
@@ -47,11 +64,11 @@ class Contacts extends Component {
 
                 <List>
                     {
-                        contacts.map( (contact, key) =>
-                            <div key={key}>
+                        contactList.map( (contact, key) =>
+                            <div key={ contact.get('id') }>
                                 <ListItem
-                                    primaryText={contact.get('name')}
-                                    secondaryText="..."
+                                    primaryText={ contact.get('name') }
+                                    secondaryText={ contact.get('secondaryText') }
                                     leftAvatar={<Avatar src={'images/avatar/' + contact.get('photo')} />}
                                     onClick={ () => history.push(`/dialog/${contact.get('id')}`) }
                                 />
@@ -59,20 +76,6 @@ class Contacts extends Component {
                             </div>
                         )
                     }
-                    <ListItem
-                        primaryText="Арсений Петров"
-                        secondaryText="Кто я? Хороший вопрос! Я это ты!"
-                        leftAvatar={<Avatar src="images/avatar/3.jpg" />}
-                        onClick={ () => history.push('/dialog') }
-                    />
-                    <Divider inset={true} />
-                    <ListItem
-                        primaryText="Наталья Кательникова"
-                        secondaryText="А как можно не верить самому себе?! Ладно я расскажу тебе то, что можешь знать только ты."
-                        leftAvatar={<Avatar src="images/avatar/2.jpg" />}
-                        rightIcon={<CommunicationChatBubble />}
-                        onClick={ () => history.push('/dialog') }
-                    />
                 </List>
 
                 <BottomNavigation selectedIndex={0} style={{ position: 'absolute', bottom: 0 }}>
@@ -94,11 +97,13 @@ class Contacts extends Component {
 
 
 
-const mapStateToProps = (state, ownProps) => {
-    const { contacts } = state;
+const mapStateToProps = (state) => {
+    const { contacts, dialogs, messages } = state;
 
     return {
-        contacts
+        contacts,
+        dialogs,
+        messages
     }
 };
 

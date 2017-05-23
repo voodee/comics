@@ -1,6 +1,20 @@
 import { fromJS } from 'immutable'
 
 export default {
+    dialogs: fromJS([
+        {
+            id: 1,
+            contactId: 1,
+            textType: 'message',
+            textId: 1
+        },
+        {
+            id: 2,
+            contactId: 2,
+            textType: 'message',
+            textId: 3
+        }
+    ]),
     contacts: fromJS([
         {
             id: 1,
@@ -22,39 +36,44 @@ export default {
         {
             id: 2,
             contactId: 1,
-            text: 'Давай я расскажу всё по порядку',
+            text: 'Какую таблетку ты выберешь?',
+        },
+        {
+            id: 3,
+            contactId: 2,
+            text: '...',
         }
     ]),
     answers: fromJS([
         {
             id: 1,
-            messageIdFrom: 1,
-            messageIdTo: 2,
+            messageIdSource: 1,
+            messageIdTarget: 2,
             text: 'О чём ты говоришь?'
         },
         {
             id: 2,
-            messageIdFrom: 1,
-            messageIdTo: 3,
+            messageIdSource: 1,
+            messageIdTarget: 2,
             text: 'Псих, иди в бан!'
         },
         {
             id: 3,
-            messageIdFrom: 1,
-            messageIdTo: 2,
+            messageIdSource: 1,
+            messageIdTarget: 2,
             text: 'Хорошо, удиви меня :D'
         },
         {
             id: 4,
-            messageIdFrom: 2,
-            messageIdTo: 3,
-            text: 'ответ1'
+            messageIdSource: 2,
+            messageIdTarget: 2,
+            text: 'красную'
         },
         {
             id: 5,
-            messageIdFrom: 2,
-            messageIdTo: 4,
-            text: 'ответ2'
+            messageIdSource: 2,
+            messageIdTarget: 2,
+            text: 'синию'
         }
     ])
 }

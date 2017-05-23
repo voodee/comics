@@ -36,12 +36,13 @@ class Dialog extends Component {
         this.scrollIntoLastBubble()
     }
 
-    handlerClickAnswer = (id) => {
-        this.props.selectAnswer(id)
+    handlerClickAnswer = (answerId, contactId) => {
+        const answer = this.props.answers.filter( answer => answer.get('id') == answerId ).get(0);
+        this.props.selectAnswer(answerId, contactId, answer.get('messageIdTarget'))
     }
 
     render() {
-        const { history, messages, answers } = this.props;
+        const { contactId, history, dialogs, messages, answers, dialogAnswers } = this.props;
 
         return (
             <div className="dialog">
@@ -71,9 +72,15 @@ class Dialog extends Component {
                         <span>{moment().format('dddd, DD MMMM')}</span>
                     </div>
                     {
-                        messages.map( message =>
-                            <div key={ message.get('id') }>
-                                <div className="bubble you">{ message.get('text') }</div>
+                        dialogs.map( dialog =>
+                            <div key={ dialog.get('id') }>
+                                <div className={ `bubble ${dialog.get('textType') == 'message' ? 'you' : 'me'}` }>
+                                    {
+                                        dialog.get('textType') == 'message'
+                                            ? messages.filter( message => message.get('id') == dialog.get('textId') ).get(0).get('text')
+                                            : answers.filter( answer => answer.get('id') == dialog.get('textId') ).get(0).get('text')
+                                    }
+                                </div>
                             </div>
                         )
                     }
@@ -83,12 +90,12 @@ class Dialog extends Component {
                     <Divider />
                     <List>
                         {
-                            answers.map( (answer, key) =>
+                            dialogAnswers.map( (answer, key) =>
                                 <div key={ answer.get('id') }>
                                     <ListItem
                                         primaryText={ answer.get('text') }
                                         leftIcon={<ContentAdd />}
-                                        onClick={ () => this.handlerClickAnswer( answer.get('id') ) }
+                                        onClick={ () => this.handlerClickAnswer( answer.get('id'), contactId ) }
                                     />
                                     { answers.size - 1 != key &&
                                         <Divider inset={true} />
@@ -106,26 +113,35 @@ class Dialog extends Component {
 
 const mapStateToProps = (state, ownProps) => {
     const contactId = ownProps.match.params.id;
-    let currentMessage = null;
+    // let currentMessage = null;
 
+    console.log('dialogs', state.dialogs.toJS())
+
+    const dialogs = state.dialogs
+        .filter( dialog => dialog.get('contactId') == contactId);
     return {
-        messages: state.messages
-            // выбираем сообщения этого контакта
-            .filter( message => message.get('contactId') == contactId)
-            // показываем только сообщения с ответами + 1 без ответа
-            .filter( message => {
-                if ( !currentMessage && !message.get('answerId') ) {
-                    currentMessage = message.get('id');
-                    return true;
-                }
-                return !currentMessage;
-            })
-            //
-            .sort((a, b) => a.get('id') - b.get('id')),
+        contactId,
+        dialogs,
 
-        answers: state.answers
-            // ToDo оптимизнуть, тут всегда будет только один элемент
-            .filter( answer => answer.get('messageId') == currentMessage)
+        // messages: state.messages
+        //     // выбираем сообщения этого контакта
+        //     .filter( message => message.get('contactId') == contactId)
+        //     // показываем только сообщения с ответами + 1 без ответа
+        //     .filter( message => {
+        //         if ( !currentMessage && !message.get('answerId') ) {
+        //             currentMessage = message.get('id');
+        //             return true;
+        //         }
+        //         return !currentMessage;
+        //     })
+        //     //
+        //     .sort((a, b) => a.get('id') - b.get('id')),
+
+        dialogAnswers: state.answers
+            .filter( answer => answer.get('messageIdSource') == dialogs.last().get('textId')),
+
+        messages: state.messages,
+        answers: state.answers,
     }
 };
 
